@@ -1,0 +1,15 @@
+[Unit]
+Description=Haproxy Service
+After=docker.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill docker-haproxy
+ExecStartPre=-/usr/bin/docker rm docker-haproxy
+ExecStartPre=/usr/bin/docker pull mimperatore/docker-haproxy
+ExecStart=/usr/bin/docker run --name docker-haproxy mimperatore/docker-haproxy
+ExecStop=/usr/bin/docker stop docker-haproxy
+
+[X-Fleet]
+Global=true

@@ -1,0 +1,31 @@
+global
+    maxconn 4096
+    chroot /var/lib/haproxy
+    user haproxy
+    group haproxy
+
+defaults
+    log global
+    mode    http
+    option  httplog
+    option  dontlognull
+    option  redispatch
+    retries 3
+    maxconn 2000
+    timeout connect 5000ms
+    timeout client 50000ms
+    timeout server 50000ms
+
+listen stats :80
+    stats enable
+    stats uri /stats
+
+<% port_groups.each_pair do |port_number, port_group| %>
+frontend fe_<%= port_number %>
+    bind *:<%= port_number %>
+    default_backend be_<%= port_number %>
+
+backend be_<%= port_number %><% port_group.each_with_index do |port_info, idx| %>
+    server be_<%= "#{port_number}-#{idx}" %> <%= port_info['ip'] %>:<%= port_info['public_port'] %> maxconn 32
+  <% end %>
+<% end %>
